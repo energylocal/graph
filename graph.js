@@ -515,7 +515,7 @@ function pushfeedlist(feedid, yaxis) {
     if (f==false) f = getfeedpublic(feedid);
     if (f!=false) {
         if (f.datatype==2 || f.value % 1 !== 0 ) dp=1;
-        feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:yaxis, fill:0, scale: 1.0, delta:false, getaverage:false, dp:dp, plottype:'lines'});
+        feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:yaxis, fill:0, scale: 1.0, offset: 0.0, delta:false, getaverage:false, dp:dp, plottype:'lines'});
     }
 }
 
@@ -676,7 +676,9 @@ function set_feedlist() {
     {
         var scale = $(".scale[feedid="+feedlist[z].id+"]").val();
         if (scale!=undefined) feedlist[z].scale = scale;
-
+        var offset = $(".offset[feedid="+feedlist[z].id+"]").val();
+        if (offset!=undefined) feedlist[z].offset = offset;
+        
         // check to ensure feed scaling and data are only applied once
         if (feedlist[z].postprocessed==false) {
             feedlist[z].postprocessed = true;
@@ -704,6 +706,15 @@ function set_feedlist() {
                     }
                 }
             }
+            
+            // Apply a offset to feed values
+            if (feedlist[z].offset!=undefined && feedlist[z].offset!=0.0) {
+                for (var i=0; i<feedlist[z].data.length; i++) {
+                    if (feedlist[z].data[i][1]!=null) {
+                        feedlist[z].data[i][1] = feedlist[z].data[i][1] + 1*feedlist[z].offset;
+                    }
+                }
+            } 
         }
     }
     // call graph_draw() once feedlist is altered
@@ -930,6 +941,7 @@ function graph_draw()
             for (var i=0; i<11; i++) out += "<option>"+i+"</option>";
             out += "</select></td>";
             out += "<td style='text-align:center'><input class='scale' feedid="+feedlist[z].id+" type='text' style='width:50px' value='1.0' /></td>";
+            out += "<td style='text-align:center'><input class='offset' feedid="+feedlist[z].id+" type='text' style='width:50px' value='0.0' /></td>";
             out += "<td style='text-align:center'><input class='delta' feedid="+feedlist[z].id+" type='checkbox'/></td>";
             out += "<td style='text-align:center'><input class='getaverage' feedid="+feedlist[z].id+" type='checkbox'/></td>";
             out += "<td><select feedid="+feedlist[z].id+" class='decimalpoints' style='width:50px'><option>0</option><option>1</option><option>2</option><option>3</option></select></td>";
@@ -966,6 +978,7 @@ function graph_draw()
             if ($(".delta[feedid="+feedlist[z].id+"]")[0]!=undefined)
                 $(".delta[feedid="+feedlist[z].id+"]")[0].checked = feedlist[z].delta;
             $(".scale[feedid="+feedlist[z].id+"]").val(feedlist[z].scale);
+            $(".offset[feedid="+feedlist[z].id+"]").val(feedlist[z].offset);   
             $(".linecolor[feedid="+feedlist[z].id+"]").val(feedlist[z].color);
             if ($(".fill[feedid="+feedlist[z].id+"]")[0]!=undefined)
                 $(".fill[feedid="+feedlist[z].id+"]")[0].checked = feedlist[z].fill;

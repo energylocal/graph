@@ -188,6 +188,7 @@
                     <th><?php echo _('Fill') ?></th>
                     <th><?php echo _('Stack') ?></th>
                     <th style='text-align:center'><?php echo _('Scale') ?></th>
+                    <th style='text-align:center'><?php echo _('Offset') ?></th>
                     <th style='text-align:center'><?php echo _('Delta') ?></th>
                     <th style='text-align:center'><?php echo _('Average') ?></th>
                     <th><?php echo _('DP') ?></th><th style="width:120px"></th>

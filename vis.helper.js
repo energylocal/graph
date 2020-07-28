@@ -98,8 +98,8 @@ function stats(data)
     var val = null;
     for (var z in data)
     {
-        // var val = data[z][1];                   // 1) only calculated based on present values
-        if (data[z][1]!=null) val = data[z][1];    // 2) if value is missing use last value
+        var val = data[z][1];                        // 1) only calculated based on present values
+        //if (data[z][1]!=null) val = data[z][1];    // 2) if value is missing use last value
         if (val!=null) 
         {
             if (i==0) {

@@ -315,3 +315,7 @@ table#feeds.table .caret {
 .fade-enter, .fade-leave-to {
     opacity: 0;
 }
+
+#feed-controls td {
+padding:5px;
+}

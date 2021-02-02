@@ -135,6 +135,8 @@
             floatingtime = result.floatingtime,
             yaxismin = result.yaxismin;
             yaxismax = result.yaxismax;
+            yaxismin2 = result.yaxismin2;
+            yaxismax2 = result.yaxismax2;
             feedlist = result.feedlist;
             
             // show settings

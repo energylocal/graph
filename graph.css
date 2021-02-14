@@ -119,6 +119,10 @@ table#feeds tbody tr th {
     z-index: 2;
 }
 
+.feed-options #tables {
+    overflow-x: scroll;
+}
+
 #vis-mode-toggle, #vis-mode-user, #vis-mode-groups{
     margin:15px 0;
 }
@@ -225,6 +229,11 @@ input.feed-tag-checkbox-left, input.feed-tag-checkbox-right{
     outline: none;
 }
 
+#error #remove_missing.btn {
+    margin-top: -5px;
+    float: right;
+}
+
 table#feeds.table thead th{
     border-top: 2px solid #333;
     font-weight: normal !important;
@@ -279,9 +288,39 @@ table#feeds.table .caret {
     width: auto;
 }
 
-@media(max-width: 512px) {
+#showcontrols {
+  float:right; 
+  margin-right:22px
+}
+#yaxis-left { width:110px; }
+#yaxis-right { width:110px; }
+.yaxis-minmax-label { width:30px; }
+.yaxis-minmax { width:50px !important; }
+#timezone { width:280px; }
+#info {padding-top:20px; display:none}
+.table {margin-bottom:0px !important; }
+
+@media(max-width: 610px) {
     #legend .col {
         position: relative; left: 0;
+    }
+    
+    #showcontrols {
+        float:none;
+        margin:5px 0px 0px 0px;
+    }
+    
+    .alert { margin-bottom:5px; }
+    h3 {line-height:20px; }
+    
+    #yaxis-left { width:80px; }
+    #yaxis-right { width:80px; }
+    .yaxis-minmax-label { width:20px; }
+    .yaxis-minmax { width:35px !important; }
+    #timezone { width:214px; }
+    #info {padding-top:5px;}
+    .input-append {
+        margin-bottom:5px !important;
     }
 }
 .fade-enter-active, .fade-leave-active {
@@ -289,4 +328,8 @@ table#feeds.table .caret {
 }
 .fade-enter, .fade-leave-to {
     opacity: 0;
+}
+
+#feed-controls td {
+padding:5px;
 }

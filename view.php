@@ -11,7 +11,7 @@
 
     global $path, $embed;
     $userid = 0;
-    $v = 7;
+    $v = 9;
     
     if (isset($_GET['userid'])) $userid = (int) $_GET['userid'];
     
@@ -54,16 +54,33 @@
 <div id="error" style="display:none"></div>
 
 <div id="navigation" style="padding-bottom:5px;">
+
+    <div class="input-prepend input-append" style="margin-bottom:0 !important">
+        <button class='btn graph_time_refresh' title="<?php echo _('Refresh') ?>"><i class="icon-repeat"></i></button>
+        <select class='btn graph_time' style="width:110px; padding-left:5px">
+            <option value='1'><?php echo _('1 hour') ?></option>
+            <option value='6'><?php echo _('6 hours') ?></option>
+            <option value='12'><?php echo _('12 hours') ?></option>
+            <option value='24'><?php echo _('24 hours') ?></option>
+            <option value='168' selected><?php echo _('1 Week') ?></option>
+            <option value='336'><?php echo _('2 Weeks') ?></option>        
+            <option value='720'><?php echo _('Month') ?></option>
+            <option value='8760'><?php echo _('Year') ?></option>
+        </select>
+    </div>
+    <!--
     <button class='btn graph_time' type='button' data-time='1' title="<?php echo _('Day') ?>"><?php echo _('D') ?></button>
     <button class='btn graph_time' type='button' data-time='7' title="<?php echo _('Week') ?>"><?php echo _('W') ?></button>
     <button class='btn graph_time' type='button' data-time='30' title="<?php echo _('Month') ?>"><?php echo _('M') ?></button>
     <button class='btn graph_time' type='button' data-time='365' title="<?php echo _('Year') ?>"><?php echo _('Y') ?></button>
+    -->
+    
     <button id='graph_zoomin' class='btn' title="<?php echo _('Zoom In') ?>">+</button>
     <button id='graph_zoomout' class='btn' title="<?php echo _('Zoom Out') ?>">-</button>
     <button id='graph_left' class='btn' title="<?php echo _('Earlier') ?>"><</button>
     <button id='graph_right' class='btn' title="<?php echo _('Later') ?>">></button>
     
-    <div class="input-prepend input-append" style="float:right; margin-right:22px">
+    <div id="showcontrols" class="input-prepend input-append">
     <span class="add-on"><?php echo _('Show') ?></span>
     <span class="add-on"><?php echo _('missing data') ?>: <input type="checkbox" id="showmissing" style="margin-top:1px" /></span>
     <span class="add-on"><?php echo _('legend') ?>: <input type="checkbox" id="showlegend" style="margin-top:1px" /></span>
@@ -92,7 +109,7 @@
     <div id="placeholder"></div>
 </div>
 
-<div id="info" style="padding-top:20px; display:none">
+<div id="info">
     
     <div class="input-prepend input-append" style="padding-right:5px">
         <span class="add-on" style="width:50px"><?php echo _('Start') ?></span>
@@ -114,10 +131,10 @@
         <span class="add-on" style="width:50px"><?php echo _('Type') ?></span>
         <select id="request-type" style="width:130px">
             <option value="interval"><?php echo _('Fixed Interval') ?></option>
-            <option><?php echo _('Daily') ?></option>
-            <option><?php echo _('Weekly') ?></option>
-            <option><?php echo _('Monthly') ?></option>
-            <option><?php echo _('Annual') ?></option>
+            <option value="daily"><?php echo _('Daily') ?></option>
+            <option value="weekly"><?php echo _('Weekly') ?></option>
+            <option value="monthly"><?php echo _('Monthly') ?></option>
+            <option value="annual"><?php echo _('Annual') ?></option>
         </select>
         
     </div>
@@ -129,37 +146,25 @@
             <span class="add-on"><?php echo _('Limit to data interval') ?> <input id="request-limitinterval" type="checkbox" style="margin-top:1px" checked></span>
         </span>
     </div>
-    <div class="input-prepend input-append" style="padding-right:5px">
-        <span class="add-on"><?php echo _('Timezone') ?></span>
-        <span class="timezone-options" >
-            <select id="timezone" style="width:280px" >
-                <optgroup label="<?php echo _('System') ?>">
-                    <option id="browser_timezone"></option>
-                    <option id="user_timezone"></option>
-                </optgroup>
-                <optgroup label="<?php echo _('World Timezones') ?>" id="all_timezones">
-                </optgroup>
-            </select>
-        </span>
+    <div>
+        <div id="yaxis_left" class="input-append input-prepend">
+            <span id="yaxis-left" class="add-on"><?php echo _('Y-axis').' ('._('Left').')' ?>:</span>
+            <span class="yaxis-minmax-label add-on"><?php echo _('min') ?></span>
+            <input class="yaxis-minmax" id="yaxis-min" type="text" value="auto">
+            <span class="yaxis-minmax-label add-on"><?php echo _('max') ?></span>
+            <input class="yaxis-minmax" id="yaxis-max" type="text" value="auto">
+            <button class="btn reset-yaxis"><?php echo _('Reset') ?></button>
+        </div>
+        <div id="yaxis_right" class="input-append input-prepend">
+            <span id="yaxis-right" class="add-on"><?php echo _('Y-axis').' ('._('Right').')' ?>:</span>
+            <span class="yaxis-minmax-label add-on"><?php echo _('min') ?></span>
+            <input class="yaxis-minmax" id="yaxis-min2" type="text" value="auto">
+            <span class="yaxis-minmax-label add-on"><?php echo _('max') ?></span>
+            <input class="yaxis-minmax" id="yaxis-max2" type="text" value="auto">
+            <button class="btn reset-yaxis"><?php echo _('Reset') ?></button>
+        </div>
+        <button id="reload" class="btn" style="vertical-align:top"><?php echo _('Reload') ?></button>
     </div>
-    <div id="yaxis_left" class="input-append input-prepend">
-        <span class="add-on" style="width:110px"><?php echo _('Y-axis').' ('._('Left').')' ?>:</span>
-        <span class="add-on" style="width:30px"><?php echo _('min') ?></span>
-        <input id="yaxis-min" type="text" style="width:50px" value="auto">
-        <span class="add-on" style="width:30px"><?php echo _('max') ?></span>
-        <input id="yaxis-max" type="text" style="width:50px;" value="auto">
-        <button class="btn reset-yaxis"><?php echo _('Reset') ?></button>
-    </div>
-    <div id="yaxis_right" class="input-append input-prepend">
-        <span class="add-on" style="width:110px"><?php echo _('Y-axis').' ('._('Right').')' ?>:</span>
-        <span class="add-on" style="width:30px"><?php echo _('min') ?></span>
-        <input id="yaxis-min2" type="text" style="width:50px" value="auto">
-        <span class="add-on" style="width:30px"><?php echo _('max') ?></span>
-        <input id="yaxis-max2" type="text" style="width:50px;" value="auto">
-        <button class="btn reset-yaxis"><?php echo _('Reset') ?></button>
-    </div>
-
-    <button id="reload" class="btn" style="vertical-align:top"><?php echo _('Reload') ?></button>
     
     <div id="window-info" style=""></div><br>
     
@@ -173,7 +178,7 @@
             </a>
         </div>
 
-        <div id="tables" class="collapse">
+        <div id="tables">
             <table id="feed-options-table" class="table">
                 <tr>
                     <th></th>
@@ -183,6 +188,7 @@
                     <th><?php echo _('Fill') ?></th>
                     <th><?php echo _('Stack') ?></th>
                     <th style='text-align:center'><?php echo _('Scale') ?></th>
+                    <th style='text-align:center'><?php echo _('Offset') ?></th>
                     <th style='text-align:center'><?php echo _('Delta') ?></th>
                     <th style='text-align:center'><?php echo _('Average') ?></th>
                     <th><?php echo _('DP') ?></th><th style="width:120px"></th>
@@ -260,7 +266,7 @@
     }
     _locale_loaded = function (event){
         // callback when locale file loaded
-        graph_reloaddraw(); // redraw xaxis with correct monthNames and dayNames
+        graph_reload(); // redraw xaxis with correct monthNames and dayNames
     }
 </script>
 <script src="<?php echo $path; ?>Lib/user_locale.js"></script>
@@ -370,7 +376,7 @@
     view.end = now;
     view.calc_interval();
     
-    graph_reloaddraw();
+    graph_reload();
 
     $(function(){
         // manually add hide/show
@@ -395,49 +401,4 @@
     printf("var translations = %s;\n",json_encode($translations));
     ?>
 
-</script>
-
-
-<script>
-    $(function () {
-        var user = {};
-        var timezones = [];
-        var $timezone = $('#timezone');
-        var $all_timezones = $('#all_timezones');
-        var $user_timezone = $('#user_timezone');
-        var $browser_timezone = $('#browser_timezone');
-
-        $.getJSON(path + 'user/gettimezones.json')
-        .done( function(result) {
-            var out = '';
-            for (t in result) {
-                var tz = result[t];
-                out += '<option value="' + tz.id + '">' + tz.id + ' (' + tz.gmt_offset_text + ')</option>';
-                timezones[tz.id] = {
-                    label: tz.gmt_offset_text,
-                    value: tz.gmt_offset_secs
-                }
-            }
-            $all_timezones.html(out);
-        }).then( function() {
-            $.getJSON(path + 'user/get.json')
-            .done( function(response) {
-                if(response.hasOwnProperty('success') && response.success === false) {
-                    $user_timezone.text(_('User') +': ' + _('Authentication Required'));
-                } else {
-                    let user = response;
-                    $user_timezone.val(user.timezone).text(_('User') +': ' + user.timezone +' (' + timezones[user.timezone].label + ')');
-                }
-            })
-            
-            let browser_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            let label = timezones.hasOwnProperty(browser_tz) ? timezones[browser_tz].label : browser_tz;
-            $browser_timezone.val(browser_tz).text(_('Browser') +': ' + browser_tz + ' ('+ label + ')');
-        })
-
-        $timezone.on('change', function(event) {
-            graph_changeTimezone($(event.target).val());
-        });
-
-    })
 </script>

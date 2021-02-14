@@ -2,6 +2,7 @@ var view =
 {
   start:0,
   end:0,
+  mode: "interval",
   fixinterval:false,
 
   'zoomout':function ()
@@ -51,35 +52,37 @@ var view =
   
   'calc_interval':function()
   {
-    var npoints = 600;
-    var interval = Math.round(((this.end - this.start)*0.001)/npoints);
-    
-    var outinterval = 5;
-    if (interval>10) outinterval = 10;
-    if (interval>15) outinterval = 15;
-    if (interval>20) outinterval = 20;
-    if (interval>30) outinterval = 30;
-    if (interval>60) outinterval = 60;
-    if (interval>120) outinterval = 120;
-    if (interval>180) outinterval = 180;
-    if (interval>300) outinterval = 300;
-    if (interval>600) outinterval = 600;
-    if (interval>900) outinterval = 900;
-    if (interval>1200) outinterval = 1200;
-    if (interval>1800) outinterval = 1800;
-    if (interval>3600*1) outinterval = 3600*1;
-    if (interval>3600*2) outinterval = 3600*2;
-    if (interval>3600*3) outinterval = 3600*3;
-    if (interval>3600*4) outinterval = 3600*4;
-    if (interval>3600*5) outinterval = 3600*5;
-    if (interval>3600*6) outinterval = 3600*6;
-    if (interval>3600*12) outinterval = 3600*12;
-    if (interval>3600*24) outinterval = 3600*24;
-    
-    if (!this.fixinterval) this.interval = outinterval;
-    
-    this.start = Math.floor((this.start*0.001) / this.interval) * this.interval * 1000;
-    this.end = Math.ceil((this.end*0.001) / this.interval) * this.interval * 1000;
+    if (this.mode=="interval") {
+      var npoints = 600;
+      var interval = Math.round(((this.end - this.start)*0.001)/npoints);
+      
+      var outinterval = 10;
+      if (interval>10) outinterval = 10;
+      if (interval>15) outinterval = 15;
+      if (interval>20) outinterval = 20;
+      if (interval>30) outinterval = 30;
+      if (interval>60) outinterval = 60;
+      if (interval>120) outinterval = 120;
+      if (interval>180) outinterval = 180;
+      if (interval>300) outinterval = 300;
+      if (interval>600) outinterval = 600;
+      if (interval>900) outinterval = 900;
+      if (interval>1200) outinterval = 1200;
+      if (interval>1800) outinterval = 1800;
+      if (interval>3600*1) outinterval = 3600*1;
+      if (interval>3600*2) outinterval = 3600*2;
+      if (interval>3600*3) outinterval = 3600*3;
+      if (interval>3600*4) outinterval = 3600*4;
+      if (interval>3600*5) outinterval = 3600*5;
+      if (interval>3600*6) outinterval = 3600*6;
+      if (interval>3600*12) outinterval = 3600*12;
+      if (interval>3600*24) outinterval = 3600*24;
+      
+      if (!this.fixinterval) this.interval = outinterval;
+      
+      this.start = Math.floor((this.start*0.001) / this.interval) * this.interval * 1000;
+      this.end = Math.ceil((this.end*0.001) / this.interval) * this.interval * 1000;
+    }
   }
 }
 
@@ -95,8 +98,8 @@ function stats(data)
     var val = null;
     for (var z in data)
     {
-        // var val = data[z][1];                   // 1) only calculated based on present values
-        if (data[z][1]!=null) val = data[z][1];    // 2) if value is missing use last value
+        var val = data[z][1];                        // 1) only calculated based on present values
+        //if (data[z][1]!=null) val = data[z][1];    // 2) if value is missing use last value
         if (val!=null) 
         {
             if (i==0) {

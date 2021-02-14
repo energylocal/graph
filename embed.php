@@ -18,7 +18,7 @@
     $apikey = "";
     if (isset($_GET['apikey'])) $apikey = $_GET['apikey'];
     
-    $js_css_version = 1;
+    $js_css_version = 3;
 ?>
 
 <!--[if IE]><script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/excanvas.min.js"></script><![endif]-->
@@ -54,11 +54,25 @@
     </div>
 </div>
 
-<div id="navigation" style="padding-bottom:5px;" >
+<div id="navigation" style="padding-bottom:2px;" >
+    <div class="input-prepend input-append" style="margin-bottom:0 !important; margin-left:2px;">
+        <button class='btn graph_time_refresh' title="<?php echo _('Refresh') ?>"><i class="icon-repeat"></i></button>
+        <select class='btn graph_time' style="width:90px; padding-left:5px">
+            <option value='1'><?php echo _('1 hour') ?></option>
+            <option value='6'><?php echo _('6 hours') ?></option>
+            <option value='12'><?php echo _('12 hours') ?></option>
+            <option value='24'><?php echo _('24 hours') ?></option>
+            <option value='168' selected><?php echo _('1 Week') ?></option>
+            <option value='336'><?php echo _('2 Weeks') ?></option>        
+            <option value='720'><?php echo _('Month') ?></option>
+            <option value='8760'><?php echo _('Year') ?></option>
+        </select>
+    </div>
+    <!--
     <button class='btn graph_time' type='button' data-time='1'>D</button>
     <button class='btn graph_time' type='button' data-time='7'>W</button>
     <button class='btn graph_time' type='button' data-time='30'>M</button>
-    <button class='btn graph_time' type='button' data-time='365'>Y</button>
+    <button class='btn graph_time' type='button' data-time='365'>Y</button>-->
 <button class='btn navigation-timewindow' type='button'><i class='icon-resize-horizontal'></i></button>
     <button id='graph_zoomin' class='btn'>+</button>
     <button id='graph_zoomout' class='btn'>-</button>
@@ -110,14 +124,19 @@
         dataType: "json",
         success: function(result) {
             
+            if (result.mode==undefined) result.mode = 'interval';
+            
             view.start = result.start;
             view.end = result.end;
+            view.mode = result.mode;
             view.interval = result.interval;
             view.limitinterval = result.limitinterval;
             view.fixinterval = result.fixinterval;
             floatingtime = result.floatingtime,
             yaxismin = result.yaxismin;
             yaxismax = result.yaxismax;
+            yaxismin2 = result.yaxismin2;
+            yaxismax2 = result.yaxismax2;
             feedlist = result.feedlist;
             
             // show settings
@@ -143,7 +162,7 @@
 
             datetimepickerInit();
             graph_resize();
-            graph_reloaddraw();
+            graph_reload();
         }
     });
     

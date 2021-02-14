@@ -33,6 +33,8 @@ var current_graph_name = "";
 var previousPoint = 0;
 var active_histogram_feed = 0;
 
+var saveGraphsApp = false;
+
 //----------------------------------------------------------------------------------------
 // Events shared by both view and embed mode
 //----------------------------------------------------------------------------------------
@@ -1291,7 +1293,7 @@ function histogram(feedid,type,resolution)
 
 function load_saved_graphs_menu()
 {    
-    var saveGraphsApp = new Vue({
+    saveGraphsApp = new Vue({
         el: '#my_graphs',
         data: {
             selected: -1,

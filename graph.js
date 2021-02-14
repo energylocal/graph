@@ -240,6 +240,39 @@ function graph_init_editor()
         view.limitinterval = $("#request-limitinterval")[0].checked*1;
         graph_reload();
     });
+    
+    $("#clear").click(function(){
+    
+        feedlist = [];
+        plotdata = [];
+        skipmissing = 0;
+        requesttype = "interval";
+        showcsv = 0;
+        showmissing = false;
+        showtag = true;
+        showlegend = true;
+        floatingtime=1;
+        yaxismin="auto";
+        yaxismax="auto";
+        yaxismin2="auto";
+        yaxismax2="auto";
+        csvtimeformat="datestr";
+        csvnullvalues="show";
+        csvheaders="showNameTag";
+        current_graph_id = "";
+        current_graph_name = "";
+        previousPoint = 0;
+        active_histogram_feed = 0;
+
+        var timeWindow = 3600000*24.0*7;
+        var now = Math.round(+new Date * 0.001)*1000;
+        view.start = now - timeWindow;
+        view.end = now;
+        view.calc_interval();
+        
+        load_feed_selector();
+        graph_reload();
+    });
 
     $("#showcsv").click(function(){
         csvShowHide("swap");

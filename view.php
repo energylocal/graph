@@ -164,6 +164,7 @@
             <button class="btn reset-yaxis"><?php echo _('Reset') ?></button>
         </div>
         <button id="reload" class="btn" style="vertical-align:top"><?php echo _('Reload') ?></button>
+        <button id="clear" class="btn" style="vertical-align:top"><?php echo _('Clear All') ?></button>
     </div>
     
     <div id="window-info" style=""></div><br>

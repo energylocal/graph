@@ -257,7 +257,7 @@ function graph_init_editor()
        out += "<tbody class='tagbody' data-tag='"+tagname+"'>";
        for (var z in feedsbytag[tag])
        {
-           out += "<tr>";
+           out += "<tr style='color:#666'>";
            var name = feedsbytag[tag][z].name;
            if (name && name.length>20) {
                name = name.substr(0,20)+"..";
@@ -269,8 +269,25 @@ function graph_init_editor()
        }
        out += "</tbody>";
     }
+    
+    // ---------------------------------------------------------------
+    // Writting direct to the menu system here
+    // ---------------------------------------------------------------
+    // 1. Populate custom l3 menu from sidebar html placed in hidden element
+    $(".menu-l3").html($("#sidebar_html").html());
+    // 2. Clear original hidden element
+    $("#sidebar_html").html("");
+    // 3. Populate with feed list selector
     $("#feeds").html(out);
-
+    // 4. Show l3 menu
+    if (menu.width>=576) menu.show_l3();
+    // 5. Enable l3 menu so that collapsing and re-expanding works
+    if (menu.obj.setup!=undefined) {
+        menu.obj.setup.l2.graph.l3 = []
+    }
+    load_saved_graphs_menu();
+    // ---------------------------------------------------------------
+    
     if (feeds.length>12 && numberoftags>2) {
         $(".tagbody").hide();
     }
@@ -540,6 +557,10 @@ function graph_init_editor()
     $("#csvheaders").change(function(){
         csvheaders=$(this).val();
         printcsv();
+    });
+    
+    $("#download-csv").click(function(){
+        download_data("graph.csv", $("#csv").val())    
     });
 
     $('body').on("click",".legendColorBox",function(d){
@@ -919,7 +940,7 @@ function graph_draw()
         var label = "";
         if (showtag) label += feedlist[z].tag+": ";
         label += feedlist[z].name;
-        label += ' '+getFeedUnit(feedlist[z].id);
+        // label += ' '+getFeedUnit(feedlist[z].id);
         var stacked = (typeof(feedlist[z].stack) !== "undefined" && feedlist[z].stack);
         var plot = {label:label, data:data, yaxis:feedlist[z].yaxis, color: feedlist[z].color, stack: stacked};
 
@@ -1169,26 +1190,6 @@ function printcsv()
         }
     }
     $("#csv").val(csvout);
-
-    // populate download form
-    for (f in feedlist) {
-        var meta = feedlist[f];
-
-        $("[data-download]").each(function(i,elem){
-            $form = $(this);
-            var path = $form.find('[data-path]').val();
-            var action = $form.find('[data-action]').val();
-            var format = $form.find('[data-format]').val();
-            $form.attr('action', path + action + '.' + format);
-            $form.find('[name="ids"]').val(meta.id);
-            $form.find('[name="start"]').val(start_time);
-            $form.find('[name="end"]').val(end_time);
-            $form.find('[name="headers"]').val('names');
-            $form.find('[name="timeformat"]').val(csvtimeformat);
-            $form.find('[name="interval"]').val(view.interval);
-            $form.find('[name="nullvalues"]').val(csvnullvalues);
-        });
-    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -1290,257 +1291,259 @@ function histogram(feedid,type,resolution)
     $.plot("#placeholder",[{label:label, data:histogram}], options);
 }
 
-
-var saveGraphsApp = new Vue({
-    el: '#my_graphs',
-    data: {
-        selected: -1,
-        collapsed: false,
-        messages: {
-            none: 'None selected',
-            deleted: 'Deleted',
-            saved: 'Saved',
-            select: 'Select graph'
+function load_saved_graphs_menu()
+{    
+    var saveGraphsApp = new Vue({
+        el: '#my_graphs',
+        data: {
+            selected: -1,
+            collapsed: false,
+            messages: {
+                none: 'None selected',
+                deleted: 'Deleted',
+                saved: 'Saved',
+                select: 'Select graph'
+            },
+            original: '',
+            graphs: {},
+            apikeystr: apikeystr,
+            timeout: false,
+            delay: 1500,
+            status: '',
+            graphName: ''
         },
-        original: '',
-        graphs: {},
-        apikeystr: apikeystr,
-        timeout: false,
-        delay: 1500,
-        status: '',
-        graphName: ''
-    },
-    methods: {
-        /**
-         * update or create saved graph
-         */
-        saveGraph: function(){
-            var vm = this
-            var data = get_graph_data()
-            // @todo : check for duplicate name
-            // @todo : check for new name - if new create, else update
-            data.name = this.graphName
+        methods: {
+            /**
+             * update or create saved graph
+             */
+            saveGraph: function(){
+                var vm = this
+                var data = get_graph_data()
+                // @todo : check for duplicate name
+                // @todo : check for new name - if new create, else update
+                data.name = this.graphName
 
-            if (this.graphsChanged && !this.nameChanged) {
-                // UPDATE
-                graph_update(data)
-                .done(function(response) {
-                    if(typeof response.success == 'undefined' || response.success) {
-                        vm.status = response.message || vm.messages.saved
-                    } else {
-                        vm.status = "error 322"
-                    }
-                    window.setTimeout(function() {
-                        vm.status = ""
-                    }, vm.delay)
-                })
-            } else {
-                // CREATE
-                graph_create(data)
-                .done(function(response) {
-                    var newId = response.message.replace('graph saved id:','')
-                    vm.selected = -1
-                    vm.status = response.message || vm.messages.saved
-                    window.setTimeout(function() {
-                        vm.status = ''
-                    }, vm.delay)
-
-                    // get new data once saved.
-                    vm.getGraphs()
-                    .done(function(){
-                        // pre-select the new item
-                        vm.selected = vm.findGraphIndexById(newId)
-                        // add new graph to browser history
-                        vm.updateHashState(newId)
+                if (this.graphsChanged && !this.nameChanged) {
+                    // UPDATE
+                    graph_update(data)
+                    .done(function(response) {
+                        if(typeof response.success == 'undefined' || response.success) {
+                            vm.status = response.message || vm.messages.saved
+                        } else {
+                            vm.status = "error 322"
+                        }
+                        window.setTimeout(function() {
+                            vm.status = ""
+                        }, vm.delay)
                     })
-                })
-            }
+                } else {
+                    // CREATE
+                    graph_create(data)
+                    .done(function(response) {
+                        var newId = response.message.replace('graph saved id:','')
+                        vm.selected = -1
+                        vm.status = response.message || vm.messages.saved
+                        window.setTimeout(function() {
+                            vm.status = ''
+                        }, vm.delay)
 
-        },
-        deleteGraph: function(){
-            var vm = this
-            if(window.confirm('Delete ' + this.graphs[this.selected].name + ' (#' + this.graphs[this.selected].id + ') ?')) {
-                graph_delete(this.graphs[this.selected].id)
-                .done(function(response) {
-                    vm.selected = -1
-                    vm.getGraphs()
-                    vm.status = response.message || vm.messages.deleted
-                    window.setTimeout(function() {
-                        vm.status = ''
-                        vm.emptyHashState()
-                    }, vm.delay)
+                        // get new data once saved.
+                        vm.getGraphs()
+                        .done(function(){
+                            // pre-select the new item
+                            vm.selected = vm.findGraphIndexById(newId)
+                            // add new graph to browser history
+                            vm.updateHashState(newId)
+                        })
+                    })
+                }
+
+            },
+            deleteGraph: function(){
+                var vm = this
+                if(window.confirm('Delete ' + this.graphs[this.selected].name + ' (#' + this.graphs[this.selected].id + ') ?')) {
+                    graph_delete(this.graphs[this.selected].id)
+                    .done(function(response) {
+                        vm.selected = -1
+                        vm.getGraphs()
+                        vm.status = response.message || vm.messages.deleted
+                        window.setTimeout(function() {
+                            vm.status = ''
+                            vm.emptyHashState()
+                        }, vm.delay)
+                    })
+                }
+            },
+            /**
+             * load data from graph/getall
+             */
+            getGraphs: function () {
+                var vm = this
+                return $.getJSON(path+"/graph/getall"+this.apikeystr)
+                .done(function(response){
+                    if (!response.success && response.success !== false) {
+                        // @todo : work with response.groups
+                        // save sorted list to vue data
+                        vm.graphs = response.user.sort( compare_name )
+                        vm.original = JSON.stringify(vm.graphs)
+                        // if view called with graph/#Saved/[id]
+                        // find the relevant graph in the list
+                        var hashId = vm.getHashState()
+                        if (hashId !== '') {
+                            var index = vm.findGraphIndexById(hashId)
+                            if(index > -1) {
+                                vm.selected = vm.graphs[index].name
+                            }
+                        }
+                    } else {
+                        vm.message = response.messsage
+                    }
                 })
-            }
-        },
-        /**
-         * load data from graph/getall
-         */
-        getGraphs: function () {
-            var vm = this
-            return $.getJSON(path+"/graph/getall"+this.apikeystr)
-            .done(function(response){
-                if (!response.success && response.success !== false) {
-                    // @todo : work with response.groups
-                    // save sorted list to vue data
-                    vm.graphs = response.user.sort( compare_name )
-                    vm.original = JSON.stringify(vm.graphs)
-                    // if view called with graph/#Saved/[id]
-                    // find the relevant graph in the list
-                    var hashId = vm.getHashState()
-                    if (hashId !== '') {
-                        var index = vm.findGraphIndexById(hashId)
-                        if(index > -1) {
-                            vm.selected = vm.graphs[index].name
+            },
+            /**
+             * get graphs[] index that stores graph with matching id
+             * @param {String} id taken from api response
+             * @return {Number} array index of match, else -1
+             */
+            findGraphIndexById: function(id) {
+                return this.findGraph('id', id)
+            },
+            /**
+             * get graphs[] index that stores graph with matching id
+             * @param {String} name taken from form selections
+             * @return {Number} array index of match, else -1
+             */
+            findGraphIndexByName: function(name) {
+                return this.findGraph('name', name)
+            },
+            /**
+             * search loaded graphs by property and value
+             * @return first index of matched value
+             */
+            findGraph: function(property, value) {
+                return this.find(this.graphs, property, value)
+            },
+            /**
+             * Return object key if property value matches 
+             * @param {Object} list Enumerable Object to search
+             * @param {String} property Object property to compare
+             * @param {*} value Object property value to compare
+             * @return {Number} first matching index, else -1
+             */
+            find: function (list, property, value) {
+                if (typeof list === 'undefined' || typeof property === 'undefined' || typeof value === 'undefined') {
+                    return -1
+                }
+                for (n in list) {
+                    var item = list[n]
+                    if (item.hasOwnProperty(property)) {
+                        if (item[property] === value) {
+                            return n
                         }
                     }
-                } else {
-                    vm.message = response.messsage
                 }
-            })
-        },
-        /**
-         * get graphs[] index that stores graph with matching id
-         * @param {String} id taken from api response
-         * @return {Number} array index of match, else -1
-         */
-        findGraphIndexById: function(id) {
-            return this.findGraph('id', id)
-        },
-        /**
-         * get graphs[] index that stores graph with matching id
-         * @param {String} name taken from form selections
-         * @return {Number} array index of match, else -1
-         */
-        findGraphIndexByName: function(name) {
-            return this.findGraph('name', name)
-        },
-        /**
-         * search loaded graphs by property and value
-         * @return first index of matched value
-         */
-        findGraph: function(property, value) {
-            return this.find(this.graphs, property, value)
-        },
-        /**
-         * Return object key if property value matches 
-         * @param {Object} list Enumerable Object to search
-         * @param {String} property Object property to compare
-         * @param {*} value Object property value to compare
-         * @return {Number} first matching index, else -1
-         */
-        find: function (list, property, value) {
-            if (typeof list === 'undefined' || typeof property === 'undefined' || typeof value === 'undefined') {
                 return -1
+            },
+            getHashState: function() {
+                // get the id of the saved graph from the url
+                return window.location.hash.replace('#/Saved/','')
+            },
+            updateHashState: function(id){
+                // add the '#/Saved/[id]' symbol to the url
+                var hashId = this.getHashState()
+                if (hashId === "" || id !== hashId) {
+                    window.location.hash = '/Saved/' + id
+                }
+            },
+            emptyHashState: function(){
+                // remove the '#' symbol from url
+                history.replaceState(null, null, ' ')
             }
-            for (n in list) {
-                var item = list[n]
-                if (item.hasOwnProperty(property)) {
-                    if (item[property] === value) {
-                        return n
+        },
+        computed: {
+            graphsChanged: function() {
+                return JSON.stringify(this.graphs).length !== this.original.length
+            },
+            saveButtonDisabled: function() {
+                var empty = this.graphName === ''
+                var changed = this.graphsChanged
+                var selected = this.selected > -1
+
+                if ( selected && !changed ) {
+                    return true
+                }
+                if ( empty && !selected) {
+                    return true
+                }
+                return false
+            },
+            /**
+             * return true if new or saved graph name changed
+             */
+            nameChanged: function() {
+                var empty = this.graphName === ''
+                var selected = this.selected > -1
+                var downloaded = this.original !== ''
+
+                if (!downloaded || empty) {
+                    return false
+                } else {
+                    var originalSelected = {}
+                    try {
+                        originalSelected = JSON.parse(this.original)[this.selected]
+                    } catch (error) {}
+                    if(originalSelected && this.graphName === originalSelected.name) {
+                        return false
                     }
                 }
-            }
-            return -1
-        },
-        getHashState: function() {
-            // get the id of the saved graph from the url
-            return window.location.hash.replace('#/Saved/','')
-        },
-        updateHashState: function(id){
-            // add the '#/Saved/[id]' symbol to the url
-            var hashId = this.getHashState()
-            if (hashId === "" || id !== hashId) {
-                window.location.hash = '/Saved/' + id
-            }
-        },
-        emptyHashState: function(){
-            // remove the '#' symbol from url
-            history.replaceState(null, null, ' ')
-        }
-    },
-    computed: {
-        graphsChanged: function() {
-            return JSON.stringify(this.graphs).length !== this.original.length
-        },
-        saveButtonDisabled: function() {
-            var empty = this.graphName === ''
-            var changed = this.graphsChanged
-            var selected = this.selected > -1
-
-            if ( selected && !changed ) {
                 return true
             }
-            if ( empty && !selected) {
-                return true
-            }
-            return false
         },
-        /**
-         * return true if new or saved graph name changed
-         */
-        nameChanged: function() {
-            var empty = this.graphName === ''
-            var selected = this.selected > -1
-            var downloaded = this.original !== ''
-
-            if (!downloaded || empty) {
-                return false
-            } else {
-                var originalSelected = {}
-                try {
-                    originalSelected = JSON.parse(this.original)[this.selected]
-                } catch (error) {}
-                if(originalSelected && this.graphName === originalSelected.name) {
-                    return false
+        watch: {
+            /**
+             * `selected` is array index of currently selected graph
+             */
+            selected: function (newVal) {
+                // change the name of the selected graph to display
+                // change global id of selected item
+                var graph = this.graphs[newVal]
+                if (graph) {
+                    this.graphName = graph.name
+                    if (graph.id !== this.getHashState()) {
+                        this.updateHashState(graph.id)
+                    }
+                    // use function outside of vuejs to update the graph and menu
+                    load_saved_graph(this.graphs[newVal])
+                } else {
+                    this.graphName =  ''
+                    this.emptyHashState()
+                }
+            },
+            graphName: function (newVal) {
+                if (newVal !== "" && this.selected > -1) {
+                    this.graphs[this.selected].name = newVal
+                } else {
+                    graphsChanged = true
                 }
             }
-            return true
-        }
-    },
-    watch: {
-        /**
-         * `selected` is array index of currently selected graph
-         */
-        selected: function (newVal) {
-            // change the name of the selected graph to display
-            // change global id of selected item
-            var graph = this.graphs[newVal]
-            if (graph) {
-                this.graphName = graph.name
-                if (graph.id !== this.getHashState()) {
-                    this.updateHashState(graph.id)
-                }
-                // use function outside of vuejs to update the graph and menu
-                load_saved_graph(this.graphs[newVal])
-            } else {
-                this.graphName =  ''
-                this.emptyHashState()
-            }
         },
-        graphName: function (newVal) {
-            if (newVal !== "" && this.selected > -1) {
-                this.graphs[this.selected].name = newVal
-            } else {
-                graphsChanged = true
-            }
+        created: function () {
+            var vm = this
+            this.getGraphs()
+            .done(function(){
+                var newId = vm.getHashState()
+                // pre-select the item
+                vm.selected = vm.findGraphIndexById(newId)
+            })
+            window.addEventListener('hashchange', function(event) {
+                var hashId = vm.getHashState()
+                if (hashId !== '') {
+                    vm.selected = vm.findGraphIndexById(hashId)
+                }
+            });
         }
-    },
-    created: function () {
-        var vm = this
-        this.getGraphs()
-        .done(function(){
-            var newId = vm.getHashState()
-            // pre-select the item
-            vm.selected = vm.findGraphIndexById(newId)
-        })
-        window.addEventListener('hashchange', function(event) {
-            var hashId = vm.getHashState()
-            if (hashId !== '') {
-                vm.selected = vm.findGraphIndexById(hashId)
-            }
-        });
-    }
-})
+    })
+}
 
 $(function(){
     // when the form changes send the new data into the "saved list" vue app (if available)
@@ -1607,7 +1610,7 @@ function load_saved_graph(graph) {
     $("#showlegend")[0].checked = showlegend;
     // draw graph
     graph_reloaddraw();
-
+    load_feed_selector();
     // Placed after graph load as values only available after the graph is redrawn
     $("#csvtimeformat").val(csvtimeformat);
     $("#csvnullvalues").val(csvnullvalues);
@@ -1721,7 +1724,21 @@ function compare_name( a, b ) {
     return 0
 }
 
-
+function load_feed_selector() {
+    for (var z in feeds) {
+        var feedid = feeds[z].id;
+        $(".feed-select-left[data-feedid="+feedid+"]")[0].checked = false;
+        $(".feed-select-right[data-feedid="+feedid+"]")[0].checked = false;
+    }
+    
+    for (var z=0; z<feedlist.length; z++) {
+        var feedid = feedlist[z].id;
+        var tag = feedlist[z].tag;
+        if (tag=="") tag = "undefined";
+        if (feedlist[z].yaxis==1) { $(".feed-select-left[data-feedid="+feedid+"]")[0].checked = true; $(".tagbody[data-tag='"+tag+"']").show(); }
+        if (feedlist[z].yaxis==2) { $(".feed-select-right[data-feedid="+feedid+"]")[0].checked = true; $(".tagbody[data-tag='"+tag+"']").show(); }
+    }
+}
 /**
  * @todo replace this with moment.js translated date/time strings
  * see feed and input views for example of translated dates
@@ -1746,3 +1763,19 @@ function printdate(timestamp)
     if (thisyear!=year) datestr +=" "+year;
     return datestr;
 };
+
+// See: https://stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server
+function download_data(filename, data) {
+    var blob = new Blob([data], {type: 'text/csv'});
+    if(window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveBlob(blob, filename);
+    }
+    else{
+        var elem = window.document.createElement('a');
+        elem.href = window.URL.createObjectURL(blob);
+        elem.download = filename;        
+        document.body.appendChild(elem);
+        elem.click();        
+        document.body.removeChild(elem);
+    }
+}

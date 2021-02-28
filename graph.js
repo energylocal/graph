@@ -33,6 +33,8 @@ var current_graph_name = "";
 var previousPoint = 0;
 var active_histogram_feed = 0;
 
+var panning = false;
+
 //----------------------------------------------------------------------------------------
 // Events shared by both view and embed mode
 //----------------------------------------------------------------------------------------
@@ -52,12 +54,15 @@ $('.graph_time_refresh').click(function () {
     view.calc_interval();
     graph_reload();
 });
+// Graph zooming
 $('#placeholder').bind("plotselected", function (event, ranges) {
     floatingtime=0;
     view.start = ranges.xaxis.from;
     view.end = ranges.xaxis.to;
     view.calc_interval();
+    timeWindowChanged = 1;
     graph_reload();
+    panning = true; setTimeout(function() {panning = false; }, 100);
 });
 $('#placeholder').bind("plothover", function (event, pos, item) {
     var item_value;
@@ -83,6 +88,23 @@ $('#placeholder').bind("plothover", function (event, pos, item) {
             "<br><span style='font-size:11px'>("+(item_time/1000)+")</span>", "#fff");
         }
     } else $("#tooltip").remove();
+});
+
+// Graph click
+//$("#placeholder").bind("touchstarted", function (event, pos) {
+//    $("#legend").hide();
+//    showlegend = false;
+//});
+
+$("#placeholder").bind("touchended", function (event, ranges) {
+    view.start = ranges.xaxis.from;
+    view.end = ranges.xaxis.to;
+    view.calc_interval();
+    timeWindowChanged = 1;
+//    showlegend = $("#showlegend")[0].checked;
+//    $("#legend").show();
+    graph_reload();
+    panning = true; setTimeout(function() {panning = false; }, 100);
 });
 
 // on finish sidebar hide/show
@@ -843,7 +865,7 @@ function graph_draw()
         toggle: { scale: "visible" },
         touch: { pan: "x", scale: "x" },
         hooks: {
-            bindEvents: [group_legend_values]
+//            bindEvents: [group_legend_values]  // CHAVEIRO: this is breaking the touch function with the label overlapping the default flot one. Maybe a flot bug, maybe my lack of knowledge
         }
     }
 
@@ -864,7 +886,7 @@ function graph_draw()
         mins = "";
     }
 
-    if (!embed) $("#window-info").html("<b>"+_lang['Window']+":</b> "+printdate(view.start)+" > "+printdate(view.end)+", <b>"+_lang['Length']+":</b> "+hours+"h"+mins+" ("+time_in_window+" seconds)");
+    if (!embed) $("#window-info").html("<b>"+_lang['Window']+":</b> "+printdate(view.start)+" <b>→</b> "+printdate(view.end)+"<br><b>"+_lang['Length']+":</b> "+hours+"h"+mins+" ("+time_in_window+" seconds)");
 
     plotdata = [];
     for (var z in feedlist) {
@@ -1750,19 +1772,25 @@ function load_feed_selector() {
 function printdate(timestamp)
 {
     var date = new Date();
-    var thisyear = date.getFullYear()-2000;
+    var thisyear = date.getFullYear();
 
     var date = new Date(timestamp);
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var year = date.getFullYear()-2000;
+    var year = date.getFullYear();
     var month = months[date.getMonth()];
     var day = date.getDate();
 
     var minutes = date.getMinutes();
     if (minutes<10) minutes = "0"+minutes;
 
-    var datestr = date.getHours()+":"+minutes+" "+day+" "+month;
-    if (thisyear!=year) datestr +=" "+year;
+    var secs = date.getSeconds();
+    if (secs<10) secs = "0"+secs;
+
+    var datestr = "";
+    //	date.getHours()+":"+minutes+" "+day+" "+month;
+    datestr += day+"/"+month;
+    if (thisyear!=year) datestr += "/"+year;
+    datestr += " " + date.getHours()+":"+minutes+":"+secs;
     return datestr;
 };
 

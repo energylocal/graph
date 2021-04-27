@@ -1692,6 +1692,7 @@ function graph_create(data) {
         delete data.feedlist[i].data
         delete data.feedlist[i].stats;
     }
+    data.name = encodeURIComponent(data.name)
     // Save
     var ajax = $.ajax({
         method: "POST",

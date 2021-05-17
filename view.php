@@ -11,7 +11,7 @@
 
     global $path, $embed;
     $userid = 0;
-    $v = 9;
+    $v = 10;
     
     if (isset($_GET['userid'])) $userid = (int) $_GET['userid'];
     
@@ -38,13 +38,15 @@
 <link href="<?php echo $path; ?>Lib/bootstrap-datetimepicker-0.0.11/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
 <link href="<?php echo $path; ?>Modules/graph/graph.css?v=<?php echo $v; ?>" rel="stylesheet">
 
-<script src="<?php echo $path;?>Lib/flot/jquery.flot.min.js"></script>
+<script src="<?php echo $path;?>Lib/flot/jquery.flot.merged.js"></script>
+<!-- <script src="<?php echo $path;?>Lib/flot/jquery.flot.min.js"></script>
 <script src="<?php echo $path;?>Lib/flot/jquery.flot.time.min.js"></script>
 <script src="<?php echo $path;?>Lib/flot/jquery.flot.selection.min.js"></script>
 <script src="<?php echo $path;?>Lib/flot/jquery.flot.touch.min.js"></script>
 <script src="<?php echo $path;?>Lib/flot/jquery.flot.togglelegend.min.js"></script>
 <script src="<?php echo $path;?>Lib/flot/jquery.flot.resize.min.js"></script>
 <script src="<?php echo $path; ?>Lib/flot/jquery.flot.stack.min.js"></script>
+-->
 <script src="<?php echo $path;?>Modules/graph/vis.helper.js?v=<?php echo $v; ?>"></script>
 <script src="<?php echo $path;?>Lib/misc/clipboard.js?v=<?php echo $v; ?>"></script>
 <script src="<?php echo $path; ?>Lib/bootstrap-datetimepicker-0.0.11/js/bootstrap-datetimepicker.min.js"></script>

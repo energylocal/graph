@@ -3,7 +3,7 @@ global $session;
 // Initial graph menu item placement
 $menu["setup"]["l2"]['graph'] = array(
     "name"=>"Graphs",
-    "href"=>"graph", 
+    "href"=>"graph",
     "order"=>3, 
     "icon"=>"show_chart"
 );

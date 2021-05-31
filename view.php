@@ -11,7 +11,7 @@
 
     global $path, $embed;
     $userid = 0;
-    $v = 10;
+    $v = 12;
     
     if (isset($_GET['userid'])) $userid = (int) $_GET['userid'];
     

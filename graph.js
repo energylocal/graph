@@ -98,14 +98,14 @@ $('#placeholder').bind("plothover", function (event, pos, item) {
 //});
 
 $("#placeholder").bind("touchended", function (event, ranges) {
-    view.start = ranges.xaxis.from;
-    view.end = ranges.xaxis.to;
-    view.calc_interval();
-    timeWindowChanged = 1;
-//    showlegend = $("#showlegend")[0].checked;
-//    $("#legend").show();
-    graph_reload();
-    panning = true; setTimeout(function() {panning = false; }, 100);
+    if (ranges.xaxis.from!=undefined) {
+        view.start = ranges.xaxis.from;
+        view.end = ranges.xaxis.to;
+        view.calc_interval();
+        timeWindowChanged = 1;
+        graph_reload();
+        panning = true; setTimeout(function() {panning = false; }, 100);
+    }
 });
 
 // on finish sidebar hide/show
@@ -238,6 +238,7 @@ function graph_init_editor()
     // 5. Enable l3 menu so that collapsing and re-expanding works
     if (menu.obj.setup!=undefined) {
         menu.obj.setup.l2.graph.l3 = []
+        menu.active_l3 = true;
     }
     load_saved_graphs_menu();
     // ---------------------------------------------------------------

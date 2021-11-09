@@ -588,7 +588,7 @@ function pushfeedlist(feedid, yaxis) {
 
     if (f==false) f = getfeedpublic(feedid);
     if (f!=false) {
-        if (f.datatype==2 || f.value % 1 !== 0 ) dp=1;
+        if (f.value % 1 !== 0 ) dp=1;
         feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:yaxis, fill:0, scale: 1.0, offset: 0.0, delta:false, getaverage:false, dp:dp, plottype:'lines'});
     }
 }
@@ -649,7 +649,7 @@ function graph_reload()
         apikey: apikey
     }
     if (view.mode!="interval") {
-        data.mode = view.mode;
+        data.interval = view.mode;
     } else {
         data.interval = view.interval;
     }
@@ -676,8 +676,8 @@ function graph_reload()
     }
     if (average_ids.length > 0) {
         // get feedlist average data
-        var average_ajax_data = $.extend({}, data, {ids: average_ids.join(',')});
-        $.getJSON(path+"feed/average.json", average_ajax_data, addFeedlistData)
+        var average_ajax_data = $.extend({}, data, {ids: average_ids.join(','), average:1});
+        $.getJSON(path+"feed/data.json", average_ajax_data, addFeedlistData)
         .fail(handleFeedlistDataError)
         .done(checkFeedlistData);
     }
@@ -1357,7 +1357,7 @@ function load_saved_graphs_menu()
                 none: 'None selected',
                 deleted: 'Deleted',
                 saved: 'Saved',
-                select: 'Select graph'
+                select: _lang['Select graph']
             },
             original: '',
             graphs: {},

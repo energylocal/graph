@@ -301,12 +301,16 @@ function graph_init_editor()
     });
     $(".csvoptions").hide();
 
-    $("body").on("click",".getaverage",function(){
+    $("body").on("click",".average",function(){
         var feedid = $(this).attr("feedid");
 
         for (var z in feedlist) {
             if (feedlist[z].id==feedid) {
-                feedlist[z].getaverage = $(this)[0].checked;
+                if ($(this)[0].checked) {
+                    feedlist[z].average = 1;
+                } else {
+                    feedlist[z].average = 0;
+                }
                 break;
             }
         }
@@ -329,7 +333,11 @@ function graph_init_editor()
 
         for (var z in feedlist) {
             if (feedlist[z].id==feedid) {
-                feedlist[z].delta = $(this)[0].checked;
+                if ($(this)[0].checked) {
+                    feedlist[z].delta = 1;
+                } else {
+                    feedlist[z].delta = 0;
+                }    
                 break;
             }
         }
@@ -589,7 +597,7 @@ function pushfeedlist(feedid, yaxis) {
     if (f==false) f = getfeedpublic(feedid);
     if (f!=false) {
         if (f.value % 1 !== 0 ) dp=1;
-        feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:yaxis, fill:0, scale: 1.0, offset: 0.0, delta:false, getaverage:false, dp:dp, plottype:'lines'});
+        feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:yaxis, fill:0, scale: 1.0, offset: 0.0, delta:0, average:0, dp:dp, plottype:'lines'});
     }
 }
 
@@ -629,24 +637,25 @@ function graph_reload()
     $("#request-interval").val(view.interval);
     $("#request-limitinterval").attr("checked",view.limitinterval);
 
+    // Convert feedlist into csv properties
     var ids = [];
-    var average_ids = [];
-
-    // create array of selected feed ids
+    var averages = [];
+    var deltas = [];
     for (var z in feedlist) {
-        if (feedlist[z].getaverage) {
-            average_ids.push(feedlist[z].id);
-        } else {
-            ids.push(feedlist[z].id);
-        }
+        ids.push(feedlist[z].id);
+        averages.push(feedlist[z].average)
+        deltas.push(feedlist[z].delta)
     }
+    
     var data = {
         ids: ids.join(','),
         start: view.start,
         end: view.end,
         skipmissing: skipmissing,
         limitinterval: view.limitinterval,
-        apikey: apikey
+        apikey: apikey,
+        average: averages.join(','),
+        delta: deltas.join(',')
     }
     if (view.mode!="interval") {
         data.interval = view.mode;
@@ -654,7 +663,7 @@ function graph_reload()
         data.interval = view.interval;
     }
 
-    if (ids.length + average_ids.length === 0) {
+    if (ids.length === 0) {
         graph_resize();
         graph_draw();
         var title = _lang['Select a feed'] + '.';
@@ -667,17 +676,9 @@ function graph_reload()
     } else {
         $('#graph-wrapper').removeClass('empty');
         $('#cloned_toggle').remove();
-    }
-    if (ids.length > 0) {
+
         // get feedlist data
         $.getJSON(path+"feed/data.json", data, addFeedlistData)
-        .fail(handleFeedlistDataError)
-        .done(checkFeedlistData);
-    }
-    if (average_ids.length > 0) {
-        // get feedlist average data
-        var average_ajax_data = $.extend({}, data, {ids: average_ids.join(','), average:1});
-        $.getJSON(path+"feed/data.json", average_ajax_data, addFeedlistData)
         .fail(handleFeedlistDataError)
         .done(checkFeedlistData);
     }
@@ -757,21 +758,7 @@ function set_feedlist() {
         if (feedlist[z].postprocessed==false) {
             feedlist[z].postprocessed = true;
             console.log("postprocessing feed "+feedlist[z].id+" "+feedlist[z].name);
-
-            // Apply delta adjustement to feed values
-            if (feedlist[z].delta) {
-                for (var i=1; i<feedlist[z].data.length; i++) {
-                    // compute feedlist[z].data[i-1]
-                    if (feedlist[z].data[i-1][1] == null || feedlist[z].data[i][1] == null) {
-                        feedlist[z].data[i-1][1] = null;
-                    }
-                    else {
-                        feedlist[z].data[i-1][1] = feedlist[z].data[i][1] - feedlist[z].data[i-1][1];
-                    }
-                }
-                feedlist[z].data[feedlist[z].data.length-1][1] = null;
-            }
-
+            
             // Apply a scale to feed values
             if (feedlist[z].scale!=undefined && feedlist[z].scale!=1.0) {
                 for (var i=0; i<feedlist[z].data.length; i++) {
@@ -1017,7 +1004,7 @@ function graph_draw()
             out += "<td style='text-align:center'><input class='scale' feedid="+feedlist[z].id+" type='text' style='width:50px' value='1.0' /></td>";
             out += "<td style='text-align:center'><input class='offset' feedid="+feedlist[z].id+" type='text' style='width:50px' value='0.0' /></td>";
             out += "<td style='text-align:center'><input class='delta' feedid="+feedlist[z].id+" type='checkbox'/></td>";
-            out += "<td style='text-align:center'><input class='getaverage' feedid="+feedlist[z].id+" type='checkbox'/></td>";
+            out += "<td style='text-align:center'><input class='average' feedid="+feedlist[z].id+" type='checkbox'/></td>";
             out += "<td><select feedid="+feedlist[z].id+" class='decimalpoints' style='width:50px'><option>0</option><option>1</option><option>2</option><option>3</option></select></td>";
             out += "<td><button feedid="+feedlist[z].id+" class='histogram'>"+_lang['Histogram']+" <i class='icon-signal'></i></button></td>";
             // out += "<td><a href='"+apiurl+"'><button class='btn btn-link'>API REF</button></a></td>";
@@ -1047,8 +1034,8 @@ function graph_draw()
 
         for (var z in feedlist) {
             $(".decimalpoints[feedid="+feedlist[z].id+"]").val(feedlist[z].dp);
-            if ($(".getaverage[feedid="+feedlist[z].id+"]")[0]!=undefined)
-                $(".getaverage[feedid="+feedlist[z].id+"]")[0].checked = feedlist[z].getaverage;
+            if ($(".average[feedid="+feedlist[z].id+"]")[0]!=undefined)
+                $(".average[feedid="+feedlist[z].id+"]")[0].checked = feedlist[z].average;
             if ($(".delta[feedid="+feedlist[z].id+"]")[0]!=undefined)
                 $(".delta[feedid="+feedlist[z].id+"]")[0].checked = feedlist[z].delta;
             $(".scale[feedid="+feedlist[z].id+"]").val(feedlist[z].scale);

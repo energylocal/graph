@@ -11,7 +11,7 @@
 
     global $path, $embed;
     $userid = 0;
-    $v = 14;
+    $v = 15;
     
     if (isset($_GET['userid'])) $userid = (int) $_GET['userid'];
     
@@ -335,7 +335,7 @@
                     if (feedid) {
                         var f = getfeed(feedid);
                     if (f==false) f = getfeedpublic(feedid);
-                    if (f!=false) feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:1, fill:0, scale: 1.0, delta:false, dp:1, plottype:'lines'});
+                    if (f!=false) feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:1, fill:0, scale: 1.0, average:0, delta:0, dp:1, plottype:'lines'});
                       }
                 }
         }
@@ -349,7 +349,7 @@
                     if (feedid) {
                         var f = getfeed(feedid);
                     if (f==false) f = getfeedpublic(feedid);
-                    if (f!=false) feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:1, fill:0, scale: 1.0, delta:false, dp:1, plottype:'lines'});
+                    if (f!=false) feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:1, fill:0, scale: 1.0, average:0, delta:0, dp:1, plottype:'lines'});
                       }
                 }
         }
@@ -363,7 +363,7 @@
                     if (feedid) {
                         var f = getfeed(feedid);
                     if (f==false) f = getfeedpublic(feedid);
-                    if (f!=false) feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:2, fill:0, scale: 1.0, delta:false, dp:1, plottype:'lines'});
+                    if (f!=false) feedlist.push({id:feedid, name:f.name, tag:f.tag, yaxis:2, fill:0, scale: 1.0, average:0, delta:0, dp:1, plottype:'lines'});
                       }
                 }
         }

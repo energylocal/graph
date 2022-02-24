@@ -48,7 +48,7 @@
 }
 
 #my_graphs h4 a {
-  color: white;
+  color: var(--l2-title);
   display: block;
 }
 
@@ -57,7 +57,7 @@
 }
 
 #my_graphs h5 {
-  color:#aaa;
+  color:var(--l2-title);
 }
 
 #my_graphs input{
@@ -235,20 +235,20 @@ input.feed-tag-checkbox-left, input.feed-tag-checkbox-right{
 }
 
 table#feeds.table thead th{
-    border-top: 2px solid #333;
+    border-top: 2px solid var(--bg-l2);
     font-weight: normal !important;
-    color: #bdbdbd;
+    color: var(--l2-title);
     cursor: pointer;
     transition: all .3s ease-in;
     padding-left: 0;
 }
 table#feeds.table thead th:hover{
-    color: #f8f9fa;
+    color: var(--l2-text);
     text-decoration: underline;
 }
 table#feeds.table input[type="checkbox"] { margin: 0; }
 table#feeds.table tbody tr > *{
-    border-color: #444;
+    border-color: var(--bg-l2);
 }
 table#feeds.table tbody tr th{
     cursor: pointer;

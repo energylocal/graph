@@ -9,11 +9,9 @@
     http://openenergymonitor.org
     */
 
-    global $path, $embed;
+    global $path, $embed, $session;
     $userid = 0;
-    $v = 16;
-    
-    if (isset($_GET['userid'])) $userid = (int) $_GET['userid'];
+    $v = 20;
     
     $feedidsLH = "";
     if (isset($_GET['feedidsLH'])) $feedidsLH = $_GET['feedidsLH'];
@@ -277,11 +275,12 @@
 <script src="<?php echo $path; ?>Lib/misc/gettext.js"></script>
 
 <script>
-    var session = <?php echo $session; ?>;
+    var session_write = <?php echo $session["write"]; ?>;
     var userid = <?php echo $userid; ?>;
     var feedidsLH = "<?php echo $feedidsLH; ?>";
     var feedidsRH = "<?php echo $feedidsRH; ?>";
     var load_savegraphs = "<?php echo $load_saved; ?>";
+    var feeds = false;
 
     var _lang = <?php
         $lang['Select a feed'] = _('Select a feed');
@@ -299,18 +298,22 @@
         $lang['Length'] = _('Length');
         echo json_encode($lang) . ';';
         echo "\n";
-    ?>
+    ?>;
     
-    // Load user feeds
-    if (session) {
+    // Load public feeds for a particular user
+    if (public_userid) {
+    
+        var public_username_str = "";
+        if (public_userid) public_username_str = public_username+"/";    
+    
         $.ajax({
-            url: path+"feed/list.json"+apikeystr, async: false, dataType: "json",
+            url: path+public_username_str+"feed/list.json", async: false, dataType: "json",
             success: function(data_in) { feeds = data_in; }
         });
-    // Load public feeds for a particular user
-    } else if (userid) {
+    } else if (session_write) {
+        // Load user feeds    
         $.ajax({
-            url: path+"feed/list.json?userid="+userid, async: false, dataType: "json",
+            url: path+"feed/list.json"+apikeystr, async: false, dataType: "json",
             success: function(data_in) { feeds = data_in; }
         });
     }

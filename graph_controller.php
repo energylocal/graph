@@ -71,7 +71,8 @@ function graph_controller()
         $result = view("Modules/graph/group_view.php", array("session" => $session["write"], 'group_support' => 1));
     }
     else {
-        $result = view("Modules/graph/view.php", array("session" => $session["write"]));
+        if (!$session['read'] && !$session['public_userid']) return "";
+        $result = view("Modules/graph/view.php", array());
     }
 
     return array('content' => $result, 'fullwidth' => true);

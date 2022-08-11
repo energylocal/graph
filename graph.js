@@ -179,7 +179,7 @@ function reloadDatetimePrep()
 //----------------------------------------------------------------------------------------
 function graph_init_editor()
 {
-    if (!session && !userid) feeds = feedlist;
+    if (!feeds) feeds = feedlist;
 
     var numberoftags = 0;
     feedsbytag = {};
@@ -240,7 +240,7 @@ function graph_init_editor()
         menu.obj.setup.l2.graph.l3 = []
         menu.active_l3 = true;
     }
-    load_saved_graphs_menu();
+    if (session_write) load_saved_graphs_menu();
     // ---------------------------------------------------------------
     
     if (feeds.length>12 && numberoftags>2) {

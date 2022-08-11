@@ -643,7 +643,9 @@ function graph_reload()
     var deltas = [];
     for (var z in feedlist) {
         ids.push(feedlist[z].id);
+        if (feedlist[z].average==false) feedlist[z].average = 0;
         averages.push(feedlist[z].average)
+        if (feedlist[z].delta==false) feedlist[z].delta = 0;
         deltas.push(feedlist[z].delta)
     }
     

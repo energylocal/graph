@@ -261,7 +261,7 @@
 </script>
 
 <script src="<?php echo $path;?>Modules/graph/graph.js?v=<?php echo $v; ?>"></script>
-<script src="<?php echo $path;?>Lib/moment.min.js"></script>
+<script src="<?php echo $path;?>Lib/moment.min.js?v=1"></script>
 <script>
     var _user = {
         lang : "<?php if (isset($_SESSION['lang'])) echo $_SESSION['lang']; ?>"

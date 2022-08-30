@@ -310,7 +310,7 @@
             url: path+public_username_str+"feed/list.json", async: false, dataType: "json",
             success: function(data_in) { feeds = data_in; }
         });
-    } else if (session_write) {
+    } else {
         // Load user feeds    
         $.ajax({
             url: path+"feed/list.json"+apikeystr, async: false, dataType: "json",
